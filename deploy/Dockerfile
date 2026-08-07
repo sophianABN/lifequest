@@ -57,6 +57,13 @@ COPY --from=builder --chown=node:node /app/next.config.ts ./next.config.ts
 COPY --from=builder --chown=node:node /app/prisma ./prisma
 COPY --from=builder --chown=node:node /app/prisma.config.ts ./prisma.config.ts
 
+# Les scripts Prisma (`db:demo`, `db:migrate`) importent le client applicatif
+# par l'alias `@/…` : sans les sources ni le tsconfig qui résout cet alias,
+# `tsx` échoue en MODULE_NOT_FOUND. Quelques centaines de kilo-octets à côté
+# d'un node_modules, et l'exploitation redevient possible sur le serveur.
+COPY --from=builder --chown=node:node /app/src ./src
+COPY --from=builder --chown=node:node /app/tsconfig.json ./tsconfig.json
+
 # Les manifestes de déploiement voyagent dans l'image : le VPS les en extrait
 # au lieu de les recevoir séparément. Le compose, les scripts et le binaire
 # déployé viennent ainsi forcément du même commit.
