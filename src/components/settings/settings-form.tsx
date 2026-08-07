@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { Plus, Save, Trash2 } from "lucide-react";
+import { AlertCircle, Plus, Save, Trash2 } from "lucide-react";
 import type { Constraint, Language, Person, Skill, SkillLevel } from "@prisma/client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,6 +39,22 @@ const SKILL_LEVELS: Record<SkillLevel, string> = {
 
 const CEFR = ["A1", "A2", "B1", "B2", "C1", "C2"];
 
+/** Noms lisibles des champs, pour le récapitulatif d'erreurs. */
+const LIBELLES: Record<string, string> = {
+  name: "Prénom",
+  questTitle: "Titre de la quête",
+  bio: "Bio",
+  image: "Photo de profil",
+  birthDate: "Date de naissance",
+  deadlineDate: "Échéance de la quête",
+  city: "Ville",
+  country: "Pays",
+  schoolLevel: "Niveau scolaire",
+  freeHoursWeekly: "Temps libre",
+  monthlySavings: "Épargne mensuelle",
+  availableBudget: "Budget disponible",
+};
+
 /**
  * Paramètres du profil.
  *
@@ -71,6 +87,11 @@ export function SettingsForm({
   });
 
   const image = form.watch("image");
+
+  // Champs en erreur, prêts à être listés au-dessus du bouton.
+  const invalides = Object.entries(form.formState.errors)
+    .map(([champ, erreur]) => [champ, erreur?.message ?? "valeur invalide"] as const)
+    .filter(([, message]) => Boolean(message));
 
   const submit = async (values: ProfileInput) => {
     const result = await updateProfile(values);
@@ -129,6 +150,11 @@ export function SettingsForm({
 
                 <div className="min-w-0 flex-1 space-y-1.5">
                   <Input id="image" placeholder="https://…" {...form.register("image")} />
+                  {form.formState.errors.image && (
+                    <p className="text-xs text-destructive">
+                      {form.formState.errors.image.message}
+                    </p>
+                  )}
                   {storageEnabled && (
                     <div className="flex items-center gap-2">
                       <FileUploadButton
@@ -191,6 +217,27 @@ export function SettingsForm({
             </div>
           </CardContent>
         </Card>
+
+        {/* Un formulaire qui refuse de partir doit dire pourquoi : sans ce
+            récapitulatif, une erreur sur un champ replié plus haut donne
+            l'impression que le bouton ne fait rien. */}
+        {invalides.length > 0 && (
+          <p
+            role="alert"
+            className="flex items-start gap-2 rounded-xl bg-destructive/10 px-3 py-2 text-sm text-destructive"
+          >
+            <AlertCircle className="mt-0.5 size-4 shrink-0" />
+            <span>
+              Rien n&apos;a été enregistré :{" "}
+              {invalides.map(([champ, message], i) => (
+                <span key={champ}>
+                  {i > 0 && " · "}
+                  <strong>{LIBELLES[champ] ?? champ}</strong> — {message}
+                </span>
+              ))}
+            </span>
+          </p>
+        )}
 
         <Button type="submit" loading={form.formState.isSubmitting}>
           <Save /> Enregistrer le profil

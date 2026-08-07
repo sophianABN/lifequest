@@ -88,10 +88,23 @@ export const eventSchema = z.object({
 
 export type EventInput = z.input<typeof eventSchema>;
 
+/**
+ * Source d'une image : une URL externe, ou un chemin servi par l'application.
+ *
+ * Le téléversement vers le stockage objet produit `/api/fichiers/<clé>`, qui
+ * n'est pas une URL absolue — `z.string().url()` le rejetait, et le formulaire
+ * refusait de partir sans rien afficher.
+ */
+export const imageSource = z
+  .string()
+  .refine((v) => v === "" || /^https?:\/\//.test(v) || v.startsWith("/api/fichiers/"), {
+    message: "Renseigne une adresse commençant par https://, ou téléverse une image.",
+  });
+
 export const profileSchema = z.object({
-  name: z.string().min(2).max(50),
+  name: z.string().min(2, "Au moins 2 caractères").max(50),
   bio: z.string().max(500).optional().nullable(),
-  image: z.string().url().optional().or(z.literal("")).nullable(),
+  image: imageSource.optional().nullable(),
   birthDate: z.string().optional().nullable(),
   deadlineDate: z.string().optional().nullable(),
   questTitle: z.string().min(2).max(120),
