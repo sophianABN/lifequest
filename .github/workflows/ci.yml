@@ -72,14 +72,18 @@ jobs:
       - name: Appliquer les migrations
         run: npx prisma migrate deploy
 
-      # `migrate diff` sort en code 2 quand le schéma et les migrations
-      # divergent — typiquement un `db push` oublié en développement.
+      # L'étape précédente a rejoué tout l'historique sur la base du service :
+      # comparer cette base au schéma dit si les migrations le reproduisent
+      # fidèlement. Une divergence trahit un `db push` oublié en développement.
+      # `--exit-code` : 0 si le diff est vide, 2 sinon.
+      #
+      # Prisma 7 a retiré `--shadow-database-url` de `migrate diff` et renommé
+      # `--to-schema-datamodel` en `--to-schema`.
       - name: Schéma et migrations alignés
         run: >-
           npx prisma migrate diff
-          --from-migrations prisma/migrations
-          --to-schema-datamodel prisma/schema.prisma
-          --shadow-database-url "$DATABASE_URL"
+          --from-config-datasource
+          --to-schema prisma/schema.prisma
           --exit-code
 
       - name: Le seed s'exécute
