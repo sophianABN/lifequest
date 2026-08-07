@@ -32,6 +32,9 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# … sauf les modèles, qui ne contiennent aucun secret.
+!.env.example
+!.env.production.example
 
 # vercel
 .vercel
@@ -39,3 +42,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Réglages locaux de Claude Code (propres à chaque poste)
+.claude/settings.local.json

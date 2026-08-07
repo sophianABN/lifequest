@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  app:
+    name: Types, lint et build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      # `postinstall` lance `prisma generate`, qui lit `prisma.config.ts` :
+      # celui-ci exige une DATABASE_URL, même sans jamais se connecter.
+      - run: npm ci
+        env:
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+
+      - name: Vérification des types
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+        env:
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+
+  migrations:
+    name: Migrations Prisma
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: lifequest
+          POSTGRES_PASSWORD: lifequest
+          POSTGRES_DB: lifequest
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U lifequest"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://lifequest:lifequest@localhost:5432/lifequest?schema=public
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - run: npm ci
+
+      # Rejoue l'historique complet sur une base vierge : détecte une migration
+      # cassée ou absente du dépôt bien avant la production.
+      - name: Appliquer les migrations
+        run: npx prisma migrate deploy
+
+      # `migrate diff` sort en code 2 quand le schéma et les migrations
+      # divergent — typiquement un `db push` oublié en développement.
+      - name: Schéma et migrations alignés
+        run: >-
+          npx prisma migrate diff
+          --from-migrations prisma/migrations
+          --to-schema-datamodel prisma/schema.prisma
+          --shadow-database-url "$DATABASE_URL"
+          --exit-code
+
+      - name: Le seed s'exécute
+        run: npm run db:seed
+
+  manifests:
+    name: Manifestes et scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Compose de production valide
+        run: docker compose --env-file deploy/.env.example -f deploy/compose.yaml config --quiet
+      - name: Compose de développement valide
+        run: docker compose -f docker-compose.yml config --quiet
+      - name: Syntaxe des scripts
+        run: bash -n deploy/scripts/*.sh

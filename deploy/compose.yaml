@@ -1,0 +1,115 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# LifeQuest — stack de production.
+#
+# Suit les conventions du VPS (voir /srv/README.md) :
+#   • aucun `ports:` — Traefik est le seul service qui publie sur l'hôte ;
+#   • les services HTTP rejoignent le réseau externe `edge` et portent leurs
+#     labels ; Postgres reste sur le réseau interne du projet ;
+#   • l'image vient de GHCR et porte le tag `sha-<commit-complet>`, identique à
+#     `LIFEQUEST_REVISION` et au contenu de `DEPLOYED_REVISION`.
+#
+#   docker compose --env-file /srv/apps/lifequest/.env -f compose.yaml up -d
+# ─────────────────────────────────────────────────────────────────────────────
+name: lifequest
+
+x-image: &image
+  image: ${LIFEQUEST_IMAGE_REGISTRY:?LIFEQUEST_IMAGE_REGISTRY requis}/lifequest:${LIFEQUEST_IMAGE_TAG:?LIFEQUEST_IMAGE_TAG requis}
+
+x-app-env: &app-env
+  DATABASE_URL: ${DATABASE_URL:?DATABASE_URL requis}
+  AUTH_SECRET: ${AUTH_SECRET:?AUTH_SECRET requis}
+  AUTH_TRUST_HOST: "true"
+  AUTH_URL: https://${APP_DOMAIN:?APP_DOMAIN requis}
+  MISTRAL_API_KEY: ${MISTRAL_API_KEY:-}
+  MISTRAL_MODEL: ${MISTRAL_MODEL:-}
+  ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+  S3_ENDPOINT: ${S3_ENDPOINT:-}
+  S3_BUCKET: ${S3_BUCKET:-}
+  S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-}
+  S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-}
+  S3_REGION: ${S3_REGION:-auto}
+  S3_FORCE_PATH_STYLE: ${S3_FORCE_PATH_STYLE:-true}
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: lifequest-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-lifequest}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD requis}
+      POSTGRES_DB: ${POSTGRES_DB:-lifequest}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - default
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 512m
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-lifequest}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  # Conteneur éphémère : applique les migrations puis rend la main.
+  # `prisma migrate deploy` est idempotent — il peut tourner à chaque
+  # déploiement et ne rejoue jamais une migration déjà appliquée.
+  migrate:
+    <<: *image
+    container_name: lifequest-migrate
+    restart: "no"
+    command: ["npx", "prisma", "migrate", "deploy"]
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    networks:
+      - default
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  app:
+    <<: *image
+    container_name: lifequest-app
+    restart: unless-stopped
+    environment:
+      <<: *app-env
+      LIFEQUEST_REVISION: ${LIFEQUEST_REVISION:?LIFEQUEST_REVISION requis}
+    networks:
+      - default
+      - edge
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 768m
+    depends_on:
+      postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/connexion').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=edge"
+      - "traefik.http.routers.lifequest.rule=Host(`${APP_DOMAIN}`)"
+      - "traefik.http.routers.lifequest.entrypoints=websecure"
+      - "traefik.http.routers.lifequest.tls.certresolver=cf"
+      # Middleware partagé défini dans /srv/infra/traefik/dynamic/middlewares.yml
+      - "traefik.http.routers.lifequest.middlewares=secure-headers@file"
+      - "traefik.http.services.lifequest.loadbalancer.server.port=3000"
+
+networks:
+  default:
+    driver: bridge
+  edge:
+    external: true
+
+volumes:
+  pgdata:

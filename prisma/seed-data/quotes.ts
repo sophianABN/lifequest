@@ -1,0 +1,36 @@
+/**
+ * Citations motivantes. Une est tirée chaque jour de façon déterministe
+ * (voir `seededPick`), pour que la citation du jour reste stable au refresh.
+ */
+export const SEED_QUOTES: { text: string; author?: string }[] = [
+  { text: "Le meilleur moment pour planter un arbre était il y a vingt ans. Le deuxième meilleur moment, c'est maintenant.", author: "Proverbe" },
+  { text: "Tu n'as pas besoin de voir tout l'escalier, juste la première marche.", author: "Martin Luther King" },
+  { text: "Ce n'est pas parce que les choses sont difficiles que nous n'osons pas, c'est parce que nous n'osons pas qu'elles sont difficiles.", author: "Sénèque" },
+  { text: "Un rêve écrit avec une date devient un objectif. Un objectif découpé en étapes devient un plan.", author: "Greg Reid" },
+  { text: "La discipline, c'est choisir entre ce que tu veux maintenant et ce que tu veux le plus.", author: "Abraham Lincoln" },
+  { text: "Fais ce que tu peux, avec ce que tu as, là où tu es.", author: "Theodore Roosevelt" },
+  { text: "Les grandes choses ne sont jamais faites par impulsion, mais par une série de petites choses réunies.", author: "Vincent van Gogh" },
+  { text: "Tu ne rateras jamais un tir que tu n'as pas tenté — tu le rateras tous.", author: "Wayne Gretzky" },
+  { text: "Le courage n'est pas l'absence de peur, mais la décision que quelque chose est plus important qu'elle.", author: "Ambrose Redmoon" },
+  { text: "Chaque jour compte. Même les jours où tu n'avances que d'un pas.", author: "LifeQuest" },
+  { text: "On ne perd jamais : soit on gagne, soit on apprend.", author: "Nelson Mandela" },
+  { text: "Le succès, c'est tomber sept fois et se relever huit.", author: "Proverbe japonais" },
+  { text: "Ne compare pas ton chapitre 3 au chapitre 20 de quelqu'un d'autre.", author: "Anonyme" },
+  { text: "Ce que tu fais aujourd'hui peut améliorer tous tes lendemains.", author: "Ralph Marston" },
+  { text: "La motivation te lance, l'habitude te fait tenir.", author: "Jim Ryun" },
+  { text: "Un an d'ici, tu aimerais avoir commencé aujourd'hui.", author: "Karen Lamb" },
+  { text: "Tu es exactement à un choix de vivre une vie complètement différente.", author: "Anonyme" },
+  { text: "La patience est amère, mais son fruit est doux.", author: "Aristote" },
+  { text: "Personne ne peut revenir en arrière et recommencer, mais tout le monde peut commencer maintenant et écrire une nouvelle fin.", author: "Carl Bard" },
+  { text: "Les rêves ne fonctionnent que si tu travailles.", author: "John C. Maxwell" },
+  { text: "Il ne s'agit pas d'avoir le temps, il s'agit d'en faire.", author: "Anonyme" },
+  { text: "L'obstacle est le chemin.", author: "Marc Aurèle" },
+  { text: "Deviens la personne qui ferait ce dont tu rêves.", author: "LifeQuest" },
+  { text: "Le plus grand risque, c'est de n'en prendre aucun.", author: "Mark Zuckerberg" },
+  { text: "Fais-le avec le cœur, ou ne le fais pas du tout.", author: "Anonyme" },
+  { text: "La constance bat l'intensité, tous les jours de la semaine.", author: "Anonyme" },
+  { text: "Ton futur est créé par ce que tu fais aujourd'hui, pas demain.", author: "Robert Kiyosaki" },
+  { text: "Rien ne pousse dans la zone de confort.", author: "Anonyme" },
+  { text: "Commence là où tu es. Utilise ce que tu as. Fais ce que tu peux.", author: "Arthur Ashe" },
+  { text: "Le voyage de mille lieues commence par un pas.", author: "Lao Tseu" },
+];

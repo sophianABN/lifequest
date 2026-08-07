@@ -1,0 +1,72 @@
+name: Déploiement
+
+# Déclenchement manuel uniquement : construire est automatique, mettre en
+# production reste une décision.
+on:
+  workflow_dispatch:
+    inputs:
+      revision:
+        description: "Commit complet à déployer (40 caractères). Vide = HEAD de main."
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Production
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Résoudre la révision
+        id: rev
+        run: |
+          rev="${{ inputs.revision }}"
+          [ -z "$rev" ] && rev=$(git rev-parse main)
+          # Refuser tôt une révision inconnue évite une synchronisation
+          # partielle sur le serveur.
+          git cat-file -e "${rev}^{commit}" 2>/dev/null || {
+            echo "::error::Commit inconnu : $rev"; exit 1;
+          }
+          echo "rev=$rev" >> "$GITHUB_OUTPUT"
+
+      - name: Vérifier que l'image existe
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          docker manifest inspect \
+            "ghcr.io/sophianabn/lifequest:sha-${{ steps.rev.outputs.rev }}" > /dev/null \
+            || { echo "::error::Aucune image pour ce commit. Lance d'abord le workflow « Image »."; exit 1; }
+
+      - name: Préparer la clé SSH
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy
+          chmod 600 ~/.ssh/deploy
+          # known_hosts épinglé : sans lui, un détournement DNS suffirait à
+          # rediriger le déploiement vers une autre machine.
+          printf '%s\n' "${{ secrets.VPS_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      # Le workflow n'envoie qu'une chaîne : la révision. La clé porte une
+      # commande forcée côté serveur, seul `/srv/apps/lifequest/bin/remote-deploy`
+      # peut s'exécuter — pas de shell, pas de copie de fichier, pas de `.env`
+      # touché. Le serveur extrait les manifestes de l'image elle-même.
+      - name: Déployer
+        run: |
+          ssh -i ~/.ssh/deploy -o StrictHostKeyChecking=yes \
+            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" \
+            "${{ steps.rev.outputs.rev }}"
+
+      - name: Résumé
+        if: always()
+        run: echo "Révision ${{ steps.rev.outputs.rev }} → https://lifequest.absoley.fr" >> "$GITHUB_STEP_SUMMARY"

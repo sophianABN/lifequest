@@ -1,0 +1,58 @@
+# Services locaux pour le développement de LifeQuest : PostgreSQL et MinIO.
+#   docker compose up -d
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: lifequest-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: lifequest
+      POSTGRES_PASSWORD: lifequest
+      POSTGRES_DB: lifequest
+    ports:
+      - "5433:5432"
+    volumes:
+      - lifequest-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lifequest"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Stockage objet compatible S3. Console web sur http://localhost:9001
+  # (identifiants : lifequest / lifequest).
+  minio:
+    image: minio/minio:latest
+    container_name: lifequest-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: lifequest
+      MINIO_ROOT_PASSWORD: lifequest
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - lifequest-minio:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Conteneur éphémère : crée le bucket au premier démarrage puis s'arrête.
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 lifequest lifequest &&
+      mc mb --ignore-existing local/lifequest &&
+      echo 'Bucket lifequest prêt.'
+      "
+
+volumes:
+  lifequest-pgdata:
+  lifequest-minio:

@@ -1,0 +1,49 @@
+import { redirect } from "next/navigation";
+
+import { getNotifications, getProfile } from "@/server/queries/user";
+import { Sidebar } from "@/components/layout/sidebar";
+import { Topbar } from "@/components/layout/topbar";
+import { MobileNav } from "@/components/layout/mobile-nav";
+import { AuroraBackground } from "@/components/shared/decorations";
+
+/**
+ * Coquille applicative : sidebar fixe en desktop, topbar collante, barre
+ * d'onglets en bas sur mobile. Le profil et les notifications sont chargés
+ * ici une seule fois et distribués aux composants clients.
+ */
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  const [profile, notifications] = await Promise.all([getProfile(), getNotifications()]);
+  if (!profile) redirect("/connexion");
+
+  const sidebarUser = {
+    name: profile.name,
+    xp: profile.xp,
+    streakCurrent: profile.streakCurrent,
+    deadlineDate: profile.deadlineDate,
+    questTitle: profile.questTitle,
+  };
+
+  return (
+    <div className="min-h-dvh">
+      <AuroraBackground />
+
+      <div className="mx-auto flex max-w-[110rem]">
+        {/* Sidebar desktop */}
+        <aside className="sticky top-0 hidden h-dvh w-[17.5rem] shrink-0 border-r border-border/60 lg:block">
+          <Sidebar user={sidebarUser} />
+        </aside>
+
+        <div className="flex min-w-0 flex-1 flex-col">
+          <Topbar
+            user={{ ...sidebarUser, email: profile.email, image: profile.image }}
+            notifications={notifications}
+          />
+
+          <main className="flex-1 px-4 pb-24 pt-6 sm:px-6 lg:px-8 lg:pb-10">{children}</main>
+        </div>
+      </div>
+
+      <MobileNav />
+    </div>
+  );
+}

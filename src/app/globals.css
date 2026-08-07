@@ -1,26 +1,364 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
+/* Le dark mode est piloté par une classe (next-themes) et non par la préférence OS,
+   pour que l'utilisateur puisse choisir explicitement. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TOKENS DE MARQUE
+   Palette : rose pastel, lavande, turquoise clair, blanc cassé, gris très
+   clair, touches dorées. Nommée `blush / lilac / aqua / gold / ink` pour ne
+   pas entrer en collision avec les couleurs par défaut de Tailwind.
+   ═══════════════════════════════════════════════════════════════════════════ */
+@theme {
+  --color-blush-50: #fff5f8;
+  --color-blush-100: #feeaf1;
+  --color-blush-200: #fcd6e4;
+  --color-blush-300: #f8bbd0; /* couleur signature */
+  --color-blush-400: #f295b6;
+  --color-blush-500: #e4739c;
+  --color-blush-600: #cd5480;
+  --color-blush-700: #a53f66;
+  --color-blush-800: #7d3450;
+  --color-blush-900: #5a2839;
+
+  --color-lilac-50: #f8f5fd;
+  --color-lilac-100: #f0eafb;
+  --color-lilac-200: #e0d4f6;
+  --color-lilac-300: #c9b6e4; /* lavande */
+  --color-lilac-400: #b097da;
+  --color-lilac-500: #9678c7;
+  --color-lilac-600: #7c5fab;
+  --color-lilac-700: #634b89;
+  --color-lilac-800: #4b3a68;
+  --color-lilac-900: #362a4b;
+
+  --color-aqua-50: #f0fcfb;
+  --color-aqua-100: #dcf8f4;
+  --color-aqua-200: #baf0e9;
+  --color-aqua-300: #a7e8e0; /* turquoise clair */
+  --color-aqua-400: #6fd5c9;
+  --color-aqua-500: #45bcae;
+  --color-aqua-600: #2e9a8e;
+  --color-aqua-700: #257a71;
+  --color-aqua-800: #1f5e58;
+  --color-aqua-900: #194642;
+
+  --color-gold-50: #fdf9f0;
+  --color-gold-100: #faf0da;
+  --color-gold-200: #f4ddb1;
+  --color-gold-300: #e9c48a;
+  --color-gold-400: #e3b778; /* touches dorées */
+  --color-gold-500: #d19a4e;
+  --color-gold-600: #b07b36;
+  --color-gold-700: #8a5f2b;
+  --color-gold-800: #674724;
+  --color-gold-900: #4a341c;
+
+  --color-mint-300: #b8e6c9;
+  --color-peach-300: #ffd4b8;
+
+  --color-cream: #fdfbf9;
+
+  --color-ink-50: #faf9fb;
+  --color-ink-100: #f3f1f4; /* gris très clair */
+  --color-ink-200: #e7e3ec;
+  --color-ink-300: #cfc9d6;
+  --color-ink-400: #ada5b6;
+  --color-ink-500: #8a8095;
+  --color-ink-600: #6b6076;
+  --color-ink-700: #4e4457;
+  --color-ink-800: #3b3342;
+  --color-ink-900: #2a2430;
+  --color-ink-950: #1a1620;
+
+  /* Rayons : très arrondis, c'est une signature de la marque */
+  --radius-xs: 0.5rem;
+  --radius-sm: 0.75rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.25rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 1.75rem;
+  --radius-3xl: 2.25rem;
+
+  /* Ombres douces et colorées plutôt que noires */
+  --shadow-soft: 0 2px 10px -2px rgb(90 40 70 / 0.06), 0 6px 24px -8px rgb(90 40 70 / 0.08);
+  --shadow-card: 0 1px 2px rgb(90 40 70 / 0.04), 0 8px 30px -12px rgb(90 40 70 / 0.12);
+  --shadow-lifted: 0 2px 4px rgb(90 40 70 / 0.05), 0 18px 45px -15px rgb(90 40 70 / 0.18);
+  --shadow-glow-blush: 0 8px 32px -8px rgb(228 115 156 / 0.45);
+  --shadow-glow-gold: 0 8px 36px -6px rgb(209 154 78 / 0.45);
+  --shadow-inner-soft: inset 0 1px 2px rgb(255 255 255 / 0.6);
+
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+  --font-hand: var(--font-caveat), ui-rounded, cursive;
+
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-twinkle: twinkle 3s ease-in-out infinite;
+  --animate-shimmer: shimmer 2.5s linear infinite;
+  --animate-aurora: aurora 18s ease infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TOKENS SÉMANTIQUES — la seule chose que les composants consomment.
+   ═══════════════════════════════════════════════════════════════════════════ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #fdfbf9;
+  --background-subtle: #f7f4f8;
+  --foreground: #2a2430;
+  --muted: #f3f1f4;
+  --muted-foreground: #6b6076;
+  --card: #ffffff;
+  --card-foreground: #2a2430;
+  --popover: #ffffff;
+  --popover-foreground: #2a2430;
+  --primary: #e4739c;
+  --primary-foreground: #ffffff;
+  --secondary: #efe9fb;
+  --secondary-foreground: #4b3a68;
+  --accent: #dcf8f4;
+  --accent-foreground: #1f5e58;
+  --destructive: #e05c6e;
+  --destructive-foreground: #ffffff;
+  --success: #45bcae;
+  --warning: #e3b778;
+  --border: #ece8ef;
+  --input: #e7e3ec;
+  --ring: #f295b6;
+}
+
+.dark {
+  --background: #17131d;
+  --background-subtle: #1e1926;
+  --foreground: #f2eff5;
+  --muted: #262031;
+  --muted-foreground: #a79eb3;
+  --card: #201b29;
+  --card-foreground: #f2eff5;
+  --popover: #241e2e;
+  --popover-foreground: #f2eff5;
+  --primary: #f295b6;
+  --primary-foreground: #2a1520;
+  --secondary: #332a45;
+  --secondary-foreground: #e0d4f6;
+  --accent: #1f4a47;
+  --accent-foreground: #baf0e9;
+  --destructive: #f0798a;
+  --destructive-foreground: #2a1216;
+  --success: #6fd5c9;
+  --warning: #e9c48a;
+  --border: #322b3f;
+  --input: #3a3249;
+  --ring: #b097da;
+
+  --shadow-soft: 0 2px 10px -2px rgb(0 0 0 / 0.3), 0 6px 24px -8px rgb(0 0 0 / 0.4);
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.2), 0 8px 30px -12px rgb(0 0 0 / 0.5);
+  --shadow-lifted: 0 2px 4px rgb(0 0 0 / 0.25), 0 18px 45px -15px rgb(0 0 0 / 0.6);
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-background-subtle: var(--background-subtle);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ═══════════════════════════════════════════════════════════════════════════
+   BASE
+   ═══════════════════════════════════════════════════════════════════════════ */
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv02", "cv03", "cv04", "ss01";
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+
+  ::selection {
+    background-color: var(--color-blush-200);
+    color: var(--color-blush-900);
+  }
+
+  /* Barres de défilement discrètes, cohérentes avec la douceur générale */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-ink-300);
+    border: 3px solid transparent;
+    border-radius: 999px;
+    background-clip: content-box;
+  }
+  .dark ::-webkit-scrollbar-thumb {
+    background: var(--color-ink-700);
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-ink-400);
+    background-clip: content-box;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ═══════════════════════════════════════════════════════════════════════════
+   UTILITAIRES DE MARQUE
+   ═══════════════════════════════════════════════════════════════════════════ */
+@layer utilities {
+  /* Fond « aurore » : dégradés maillés très diffus, présents sur tout l'app shell */
+  .bg-aurora {
+    background-image:
+      radial-gradient(60rem 40rem at 8% -10%, rgb(248 187 208 / 0.35), transparent 60%),
+      radial-gradient(50rem 35rem at 95% 0%, rgb(201 182 228 / 0.32), transparent 60%),
+      radial-gradient(45rem 40rem at 50% 110%, rgb(167 232 224 / 0.28), transparent 60%);
+  }
+  .dark .bg-aurora {
+    background-image:
+      radial-gradient(60rem 40rem at 8% -10%, rgb(228 115 156 / 0.16), transparent 60%),
+      radial-gradient(50rem 35rem at 95% 0%, rgb(150 120 199 / 0.16), transparent 60%),
+      radial-gradient(45rem 40rem at 50% 110%, rgb(69 188 174 / 0.12), transparent 60%);
+  }
+
+  /* Verre dépoli — cartes flottantes, topbar, popovers */
+  .glass {
+    background-color: color-mix(in oklab, var(--card) 72%, transparent);
+    backdrop-filter: blur(16px) saturate(140%);
+    -webkit-backdrop-filter: blur(16px) saturate(140%);
+  }
+
+  .text-gradient-brand {
+    background-image: linear-gradient(100deg, var(--color-blush-500), var(--color-lilac-500) 55%, var(--color-aqua-500));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .text-gradient-gold {
+    background-image: linear-gradient(100deg, var(--color-gold-600), var(--color-gold-300) 45%, var(--color-gold-500));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Bordure en dégradé (cartes premium, objectif final) */
+  .border-gradient {
+    position: relative;
+    background-clip: padding-box;
+  }
+  .border-gradient::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, var(--color-blush-300), var(--color-lilac-300), var(--color-aqua-300));
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* Dégradé animé de l'objectif final */
+  .bg-holo {
+    background: linear-gradient(120deg, #f8bbd0, #c9b6e4, #a7e8e0, #e3b778, #f8bbd0);
+    background-size: 300% 300%;
+    animation: aurora 14s ease infinite;
+  }
+
+  .shadow-soft { box-shadow: var(--shadow-soft); }
+  .shadow-card { box-shadow: var(--shadow-card); }
+  .shadow-lifted { box-shadow: var(--shadow-lifted); }
+  .shadow-glow-blush { box-shadow: var(--shadow-glow-blush); }
+  .shadow-glow-gold { box-shadow: var(--shadow-glow-gold); }
+
+  /* Masque de fondu pour les listes défilantes (timeline, calendrier) */
+  .mask-fade-y {
+    mask-image: linear-gradient(to bottom, transparent, black 4%, black 96%, transparent);
+  }
+
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { scrollbar-width: none; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ANIMATIONS
+   ═══════════════════════════════════════════════════════════════════════════ */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.25; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes aurora {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Impression : le journal et les objectifs doivent rester lisibles sur papier */
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; }
 }
