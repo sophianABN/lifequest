@@ -13,6 +13,14 @@ export const { auth: proxy } = NextAuth(authConfig);
 
 export default proxy;
 
+/**
+ * `apple-icon` et `opengraph-image` sont des routes générées par Next, sans
+ * extension de fichier : sans exclusion explicite elles tombent sous la
+ * protection et repartent en 307 vers l'écran de connexion. Un aperçu de lien
+ * ou une icône d'écran d'accueil n'est évidemment jamais authentifié.
+ */
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+  matcher: [
+    "/((?!api|_next/static|_next/image|icon|apple-icon|opengraph-image|twitter-image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+  ],
 };
