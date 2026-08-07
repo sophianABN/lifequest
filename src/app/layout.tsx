@@ -30,11 +30,15 @@ const caveat = Caveat({
 
 export const metadata: Metadata = {
   /**
-   * Sans cette base, Next préfixe `og:image` par `http://localhost:3000`
-   * jusqu'en production, et tout aperçu de lien est cassé. `AUTH_URL` porte
-   * déjà l'URL publique exacte du déploiement.
+   * Sans cette base, Next préfixe `og:image` par `http://localhost:3000` et
+   * tout aperçu de lien est cassé.
+   *
+   * Les métadonnées des pages statiques — `/connexion`, `/inscription`, celles
+   * qu'on partage justement — sont figées à la construction. Lire `AUTH_URL`
+   * ici ne servirait à rien : elle n'existe qu'à l'exécution. Le domaine
+   * arrive donc par `NEXT_PUBLIC_SITE_URL`, passé en argument de build.
    */
-  metadataBase: new URL(process.env.AUTH_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: { default: `${APP.name} — ${APP.tagline}`, template: `%s · ${APP.name}` },
   description:
     "LifeQuest accompagne tes plus grands objectifs de vie sur plusieurs années : décomposition en étapes, priorisation intelligente, planning, journal et motivation quotidienne.",

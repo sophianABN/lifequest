@@ -29,6 +29,10 @@ RUN rm -f .env .env.local
 # `src/lib/prisma.ts` refuse de s'instancier sans variable.
 ENV DATABASE_URL="postgresql://build:build@localhost:5432/build"
 ENV NODE_ENV=production
+# Les métadonnées des pages statiques sont figées ici : le domaine public doit
+# être connu à la construction, une variable d'exécution arriverait trop tard.
+ARG NEXT_PUBLIC_SITE_URL=https://lifequest.absoley.fr
+ENV NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
 RUN npm run build
 
 # ── Exécution ────────────────────────────────────────────────────────────────
