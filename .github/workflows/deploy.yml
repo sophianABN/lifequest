@@ -12,6 +12,9 @@ on:
 
 permissions:
   contents: read
+  # Nécessaire pour interroger le manifeste de l'image avant de déployer :
+  # sans cette portée, GHCR répond « denied » même sur nos propres paquets.
+  packages: read
 
 concurrency:
   group: deploy-production
