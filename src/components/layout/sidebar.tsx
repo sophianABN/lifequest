@@ -9,7 +9,7 @@ import { cn, countdownParts } from "@/lib/utils";
 import { APP } from "@/lib/constants";
 import { levelProgress } from "@/lib/gamification";
 import { Progress } from "@/components/ui/progress";
-import { Sparkle } from "@/components/shared/decorations";
+import { Logo } from "@/components/shared/logo";
 import { NAV_SECTIONS } from "./nav-config";
 
 export interface SidebarUser {
@@ -28,14 +28,8 @@ export function Sidebar({ user, onNavigate }: { user: SidebarUser; onNavigate?: 
   return (
     <nav className="flex h-full flex-col gap-6 overflow-y-auto px-4 py-6" aria-label="Navigation principale">
       {/* Logo */}
-      <Link href="/" onClick={onNavigate} className="flex items-center gap-2.5 px-2">
-        <span className="grid size-10 place-items-center rounded-2xl bg-gradient-to-br from-blush-300 via-lilac-300 to-aqua-300 shadow-glow-blush">
-          <Sparkle size={20} className="text-white" />
-        </span>
-        <span className="min-w-0">
-          <span className="block font-display text-xl leading-none">{APP.name}</span>
-          <span className="block truncate text-[0.7rem] text-muted-foreground">{user.questTitle}</span>
-        </span>
+      <Link href="/" onClick={onNavigate} className="px-2">
+        <Logo size={40} subtitle={user.questTitle} />
       </Link>
 
       {/* Carte de niveau */}

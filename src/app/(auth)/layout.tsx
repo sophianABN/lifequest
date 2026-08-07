@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { APP } from "@/lib/constants";
 import { AuroraBackground, DoodleConfetti, DoodleHeart, DoodleMountain, Sparkle, StarField } from "@/components/shared/decorations";
+import { LogoMark, MARK_RADIUS } from "@/components/shared/logo";
 
 /** Layout plein écran des pages publiques : marque à gauche, formulaire à droite. */
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
@@ -14,9 +15,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         <StarField count={18} />
 
         <Link href="/" className="relative flex items-center gap-2.5">
-          <span className="grid size-11 place-items-center rounded-2xl bg-white/70 backdrop-blur dark:bg-white/10">
-            <Sparkle size={22} className="text-blush-500" />
-          </span>
+          <LogoMark size={44} className={`${MARK_RADIUS} shadow-lifted`} title={`${APP.name} — ${APP.tagline}`} />
           <span className="font-display text-2xl">{APP.name}</span>
         </Link>
 
