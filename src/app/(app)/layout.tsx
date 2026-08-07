@@ -5,6 +5,8 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { AuroraBackground } from "@/components/shared/decorations";
+import { DemoBanner } from "@/components/shared/demo-banner";
+import { isDemoSession } from "@/lib/auth";
 
 /**
  * Coquille applicative : sidebar fixe en desktop, topbar collante, barre
@@ -12,7 +14,11 @@ import { AuroraBackground } from "@/components/shared/decorations";
  * ici une seule fois et distribués aux composants clients.
  */
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const [profile, notifications] = await Promise.all([getProfile(), getNotifications()]);
+  const [profile, notifications, demo] = await Promise.all([
+    getProfile(),
+    getNotifications(),
+    isDemoSession(),
+  ]);
   if (!profile) redirect("/connexion");
 
   const sidebarUser = {
@@ -26,6 +32,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <div className="min-h-dvh">
       <AuroraBackground />
+      {demo && <DemoBanner />}
 
       <div className="mx-auto flex max-w-[110rem]">
         {/* Sidebar desktop */}

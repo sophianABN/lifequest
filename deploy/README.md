@@ -88,6 +88,21 @@ sauvegarde) est mis en place par la procédure d'installation.
 | `VPS_SSH_KEY` | clé privée ed25519 dédiée au déploiement |
 | `VPS_KNOWN_HOSTS` | empreinte du serveur, pour épingler l'hôte |
 
+## Compte de démonstration
+
+Le bouton « Essayer le compte de démonstration » ouvre `demo@lifequest.app`,
+en lecture seule. Il faut le provisionner une fois après le premier
+déploiement — et le rejouer de temps en temps, les dates du jeu de données
+étant relatives à l'instant du seed :
+
+```bash
+docker exec lifequest-app npm run db:demo
+```
+
+Ce script ne touche qu'à ce compte : il le supprime puis le recrée. Les
+comptes réels ne sont jamais concernés. **Ne jamais lancer `db:seed` en
+production** — celui-là vide toute la base.
+
 ## Exploitation
 
 ```bash

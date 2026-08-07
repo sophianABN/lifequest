@@ -1,4 +1,7 @@
+import { NextResponse } from "next/server";
 import type { NextAuthConfig } from "next-auth";
+
+import { DEMO_REFUSAL, isDemoEmail, isWriteRequest } from "@/lib/demo";
 
 /**
  * Configuration *sans dépendance Node* : le middleware s'exécute sur le
@@ -19,13 +22,30 @@ export const authConfig = {
     },
     session({ session, token }) {
       if (token.id) session.user.id = token.id as string;
+      session.user.isDemo = isDemoEmail(token.email);
       return session;
     },
-    /** Redirige les visiteurs non connectés vers la page de connexion. */
+    /**
+     * Deux rôles : rediriger les visiteurs non connectés, et refuser toute
+     * écriture au compte de démonstration.
+     *
+     * Ce point de passage est le garde-fou le plus sûr dont on dispose : il
+     * couvre les quarante Server Actions existantes et toutes celles à venir,
+     * sans dépendre du fait qu'on pense à protéger chacune.
+     */
     authorized({ auth, request }) {
       const isLoggedIn = Boolean(auth?.user);
       const publicPaths = ["/connexion", "/inscription", "/bienvenue"];
       const isPublic = publicPaths.some((p) => request.nextUrl.pathname.startsWith(p));
+
+      if (
+        isLoggedIn &&
+        isDemoEmail(auth?.user?.email) &&
+        isWriteRequest(request.nextUrl.pathname, request.method, request.headers)
+      ) {
+        return NextResponse.json({ error: DEMO_REFUSAL }, { status: 403 });
+      }
+
       if (isPublic) return true;
       return isLoggedIn;
     },

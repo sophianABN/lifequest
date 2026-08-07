@@ -6,7 +6,6 @@ import { motion } from "motion/react";
 import { Flame, Sparkles } from "lucide-react";
 
 import { cn, countdownParts } from "@/lib/utils";
-import { APP } from "@/lib/constants";
 import { levelProgress } from "@/lib/gamification";
 import { Progress } from "@/components/ui/progress";
 import { Logo } from "@/components/shared/logo";

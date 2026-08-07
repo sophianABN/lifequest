@@ -45,7 +45,6 @@ export default function OpengraphImage() {
             backgroundImage: "linear-gradient(135deg, #f295b6 0%, #a98ad4 48%, #45bcae 100%)",
           }}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             width={180}
             height={180}

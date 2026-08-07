@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { authConfig } from "@/lib/auth.config";
 import { loginSchema } from "@/lib/validations/auth";
 import { clientIp, rateLimit, resetRateLimit } from "@/lib/rate-limit";
+import { DEMO_REFUSAL } from "@/lib/demo";
 
 /** 10 essais par quart d'heure : indolore à l'usage, rédhibitoire pour un robot. */
 const LOGIN_ATTEMPTS = 10;
@@ -63,7 +64,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 export async function requireUserId() {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Non authentifié");
+  // Seconde barrière : le proxy refuse déjà les écritures du compte de
+  // démonstration, mais une Server Action appelée par un chemin qui
+  // l'éviterait ne doit pas passer pour autant.
+  if (session.user.isDemo) throw new Error(DEMO_REFUSAL);
   return session.user.id;
+}
+
+/** Identifiant de l'utilisateur courant, y compris en démonstration. */
+export async function currentUserId() {
+  const session = await auth();
+  return session?.user?.id ?? null;
+}
+
+export async function isDemoSession() {
+  const session = await auth();
+  return Boolean(session?.user?.isDemo);
 }
 
 export async function currentUser() {

@@ -11,12 +11,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { loginSchema, type LoginInput } from "@/lib/validations/auth";
-
-const DEMO = { email: "arwa@lifequest.app", password: "lifequest" };
+import { signInAsDemo } from "@/server/actions/auth";
 
 export function LoginForm() {
   const router = useRouter();
   const [error, setError] = React.useState<string | null>(null);
+  const [demoEnCours, startDemo] = React.useTransition();
 
   const form = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
@@ -73,19 +73,34 @@ export function LoginForm() {
         Reprendre ma quête
       </Button>
 
-      {/* Accès démo : l'application est livrée avec un compte déjà rempli. */}
-      <Button
-        type="button"
-        variant="soft"
-        className="w-full"
-        onClick={() => {
-          form.setValue("email", DEMO.email);
-          form.setValue("password", DEMO.password);
-          void form.handleSubmit(submit)();
-        }}
-      >
-        <Sparkles /> Essayer le compte de démonstration
-      </Button>
+      {/* Accès démo — lecture seule, sans inscription. Les identifiants ne
+          transitent pas par le formulaire : le visiteur ne voit pas une
+          adresse qui n'est pas la sienne, et le mot de passe reste serveur. */}
+      <div className="space-y-1.5 pt-1">
+        <Button
+          type="button"
+          variant="soft"
+          className="w-full"
+          loading={demoEnCours}
+          onClick={() =>
+            startDemo(async () => {
+              setError(null);
+              const result = await signInAsDemo();
+              if (!result.ok) {
+                setError(result.error);
+                return;
+              }
+              router.push("/");
+              router.refresh();
+            })
+          }
+        >
+          <Sparkles /> Essayer le compte de démonstration
+        </Button>
+        <p className="text-center text-[0.7rem] text-muted-foreground">
+          Accès immédiat, sans inscription — en lecture seule.
+        </p>
+      </div>
     </form>
   );
 }

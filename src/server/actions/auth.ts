@@ -3,6 +3,8 @@
 import { headers } from "next/headers";
 import bcrypt from "bcryptjs";
 
+import { signIn } from "@/lib/auth";
+import { DEMO_EMAIL, DEMO_PASSWORD } from "@/lib/demo";
 import { prisma } from "@/lib/prisma";
 import { registerSchema } from "@/lib/validations/auth";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
@@ -53,5 +55,32 @@ export async function registerUser(input: unknown) {
     },
   });
 
+  return { ok: true as const };
+}
+
+/**
+ * Connexion au compte de démonstration.
+ *
+ * Le mot de passe reste ici, côté serveur : le bouton « Essayer » n'a pas à
+ * l'embarquer dans le bundle, et l'écran de connexion n'a plus besoin de
+ * pré-remplir ses champs avec une adresse qui n'est pas celle du visiteur.
+ */
+export async function signInAsDemo() {
+  const compte = await prisma.user.findUnique({
+    where: { email: DEMO_EMAIL },
+    select: { id: true },
+  });
+  if (!compte) {
+    return {
+      ok: false as const,
+      error: "La démonstration n'est pas disponible pour le moment.",
+    };
+  }
+
+  await signIn("credentials", {
+    email: DEMO_EMAIL,
+    password: DEMO_PASSWORD,
+    redirect: false,
+  });
   return { ok: true as const };
 }

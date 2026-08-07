@@ -25,14 +25,26 @@ npm run dev
 L'application est disponible sur http://localhost:3000.
 
 **Compte de démonstration** — le bouton « Essayer le compte de démonstration »
-sur l'écran de connexion, ou :
+sur l'écran de connexion (`demo@lifequest.app`). Il contient les 25 objectifs
+de la quête, leurs étapes, un an d'historique d'XP, 34 entrées de journal, des
+badges déjà débloqués et un calendrier rempli.
 
-```
-arwa@lifequest.app / lifequest
-```
+Ce compte est **en lecture seule**, y compris en local : toute écriture est
+refusée, à trois niveaux indépendants.
 
-Il contient les 25 objectifs de la quête, leurs étapes, un an d'historique
-d'XP, 34 entrées de journal, des badges déjà débloqués et un calendrier rempli.
+| Barrière | Portée |
+|---|---|
+| `authorized()` de [auth.config.ts](src/lib/auth.config.ts) | Server Actions et soumissions natives → 403 |
+| `requireUserId()` de [auth.ts](src/lib/auth.ts) | les 40 Server Actions, même si le proxy est contourné |
+| Gardes de route | `/api/uploads` refuse ; `/api/ai/chat` répond par le moteur déterministe, sans écrire ni consommer de crédits |
+
+Le bandeau de [demo-banner.tsx](src/components/shared/demo-banner.tsx) annonce
+le mode et traduit les refus en message lisible — un bouton qui ne fait rien
+serait pire qu'un refus explicite.
+
+```bash
+npm run db:demo   # (re)crée le seul compte de démo, sans toucher aux autres
+```
 
 ### Générer `AUTH_SECRET`
 

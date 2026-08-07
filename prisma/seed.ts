@@ -18,8 +18,7 @@ import { SEED_GOALS, type SeedStep } from "./seed-data/goals";
 import { SEED_BADGES } from "./seed-data/badges";
 import { SEED_QUOTES } from "./seed-data/quotes";
 
-const DEMO_EMAIL = "arwa@lifequest.app";
-const DEMO_PASSWORD = "lifequest";
+import { DEMO_EMAIL, DEMO_PASSWORD } from "@/lib/demo";
 
 const CATEGORIES = [
   { name: "Voyage", slug: "voyage", color: "aqua", emoji: "✈️" },
@@ -39,9 +38,14 @@ const monthsFromNow = (months: number) => {
   return d;
 };
 
-async function main() {
-  console.log("🌸 Seed LifeQuest…");
-
+/**
+ * Vide toute la base.
+ *
+ * Réservé au développement — `npm run db:seed`. En production, c'est
+ * `npm run db:demo` qu'il faut utiliser : il ne touche qu'au compte de
+ * démonstration et laisse les comptes réels intacts.
+ */
+export async function wipeAll() {
   // ── Nettoyage : l'ordre respecte les contraintes de clés étrangères ────────
   await prisma.$transaction([
     prisma.aiMessage.deleteMany(),
@@ -70,14 +74,28 @@ async function main() {
     prisma.account.deleteMany(),
     prisma.user.deleteMany(),
   ]);
+}
 
-  // ── Citations & badges (données globales) ─────────────────────────────────
-  await prisma.quote.createMany({ data: SEED_QUOTES });
+/**
+ * Citations et catalogue de badges — données globales, sans propriétaire.
+ * Idempotent : `skipDuplicates` s'appuie sur la contrainte unique du code.
+ */
+export async function seedGlobals() {
+  await prisma.quote.createMany({ data: SEED_QUOTES, skipDuplicates: true });
   await prisma.badge.createMany({
     data: SEED_BADGES.map((b) => ({ ...b, rule: b.rule as unknown as Prisma.InputJsonValue })),
+    skipDuplicates: true,
   });
   console.log(`  ✓ ${SEED_QUOTES.length} citations, ${SEED_BADGES.length} badges`);
+}
 
+/**
+ * Crée le compte de démonstration et tout son contenu.
+ *
+ * Suppose que le compte n'existe pas encore : `db:seed` vient de vider la
+ * base, `db:demo` vient de supprimer ce seul compte.
+ */
+export async function createDemoUser() {
   // ── Utilisateur ───────────────────────────────────────────────────────────
   // 22 ans aujourd'hui, échéance au 25e anniversaire : la quête a du sens
   // quelle que soit la date d'exécution du seed.
@@ -358,13 +376,24 @@ async function main() {
     });
   }
 
+}
+
+async function main() {
+  console.log("🌸 Seed LifeQuest…");
+  await wipeAll();
+  await seedGlobals();
+  await createDemoUser();
   console.log("\n✨ Seed terminé.");
   console.log(`   Connexion : ${DEMO_EMAIL} / ${DEMO_PASSWORD}\n`);
 }
 
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(() => prisma.$disconnect());
+// Ce module est aussi importé par `demo.ts`, qui ne veut que les fonctions :
+// on ne déclenche le seed complet que lorsqu'il est exécuté directement.
+if (process.argv[1]?.includes("seed")) {
+  main()
+    .catch((e) => {
+      console.error(e);
+      process.exit(1);
+    })
+    .finally(() => prisma.$disconnect());
+}

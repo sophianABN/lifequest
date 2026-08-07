@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/lib/auth";
 import { rateLimit } from "@/lib/rate-limit";
+import { DEMO_REFUSAL } from "@/lib/demo";
 import {
   ALLOWED_TYPES,
   MAX_UPLOAD_BYTES,
@@ -32,6 +33,13 @@ export async function POST(request: Request) {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+
+  // Les routes `/api/*` sont hors du matcher de `proxy.ts` : le refus opposé
+  // au compte de démonstration se pose ici, sinon un visiteur pourrait
+  // remplir le bucket.
+  if (session.user.isDemo) {
+    return NextResponse.json({ error: DEMO_REFUSAL }, { status: 403 });
+  }
 
   if (!isStorageEnabled()) {
     return NextResponse.json(

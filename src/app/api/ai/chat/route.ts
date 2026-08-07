@@ -52,6 +52,11 @@ export async function POST(request: Request) {
   const userId = session?.user?.id;
   if (!userId) return new Response("Non authentifié", { status: 401 });
 
+  // En démonstration l'assistant répond, mais par son moteur déterministe :
+  // rien n'est enregistré et aucun crédit n'est consommé. Un compte public
+  // relié à une clé API facturée serait une invitation à la vider.
+  const demo = Boolean(session.user.isDemo);
+
   const body = (await request.json()) as {
     message?: string;
     conversationId?: string;
@@ -66,6 +71,22 @@ export async function POST(request: Request) {
     getUserContext(),
   ]);
   if (!profile || !ctx) return new Response("Profil introuvable", { status: 400 });
+
+  // ── Démonstration ────────────────────────────────────────────────────────
+  // Réponse du moteur déterministe, sans conversation créée ni message
+  // enregistré. On sort avant tout accès en écriture.
+  if (demo) {
+    const answer = offlineAnswer(message, goals, ctx);
+    return new Response(
+      new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode(answer));
+          controller.close();
+        },
+      }),
+      { headers: { "Content-Type": "text/plain; charset=utf-8", "X-Lifequest-Mode": "offline" } },
+    );
+  }
 
   // ── Conversation ─────────────────────────────────────────────────────────
   // Un `conversationId` inconnu (supprimé dans un autre onglet, forgé) est
