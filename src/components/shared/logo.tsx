@@ -1,3 +1,5 @@
+import * as React from "react";
+
 import { cn } from "@/lib/utils";
 import { APP } from "@/lib/constants";
 
@@ -15,9 +17,6 @@ import { APP } from "@/lib/constants";
    les deux fusionnent en une baguette magique, et sous 20 px un trait fin
    disparaît complètement.
    ═══════════════════════════════════════════════════════════════════════════ */
-
-/** Dégradé de marque, partagé par toutes les instances du signe. */
-const GRADIENT_ID = "lifequest-brand";
 
 /**
  * Rayon des coins, exprimé en pourcentage pour coïncider exactement avec le
@@ -42,6 +41,11 @@ export function LogoMark({
   className?: string;
   title?: string;
 }) {
+  // Un identifiant par instance : partagé, le dégradé est résolu sur la
+  // première occurrence du document — celle de la sidebar desktop, masquée en
+  // mobile (`display: none`), et le signe du tiroir de navigation sortait vide.
+  const gradientId = `lifequest-brand-${React.useId()}`;
+
   return (
     <svg
       width={size}
@@ -53,14 +57,14 @@ export function LogoMark({
     >
       {title && <title>{title}</title>}
       <defs>
-        <linearGradient id={GRADIENT_ID} x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor="#f295b6" />
           <stop offset="48%" stopColor="#a98ad4" />
           <stop offset="100%" stopColor="#45bcae" />
         </linearGradient>
       </defs>
 
-      <rect width="64" height="64" rx="17" fill={`url(#${GRADIENT_ID})`} />
+      <rect width="64" height="64" rx="17" fill={`url(#${gradientId})`} />
 
       {/* Le chemin, et son point de départ */}
       <path
