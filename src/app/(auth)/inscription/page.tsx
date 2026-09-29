@@ -21,6 +21,14 @@ export default function RegisterPage() {
           Se connecter
         </Link>
       </p>
+
+      <p className="mt-8 text-center text-xs text-muted-foreground">
+        En créant ta quête, tu acceptes que LifeQuest conserve ce que tu y inscris —{" "}
+        <Link href="/confidentialite" className="underline underline-offset-2 hover:text-foreground">
+          voir la politique de confidentialité
+        </Link>
+        .
+      </p>
     </div>
   );
 }

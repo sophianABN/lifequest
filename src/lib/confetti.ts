@@ -1,6 +1,7 @@
 import confetti from "canvas-confetti";
 
 import { COLOR_HEX } from "@/lib/constants";
+import { haptic } from "@/lib/native";
 
 const BRAND_COLORS = Object.values(COLOR_HEX);
 const GOLD_COLORS = ["#e3b778", "#d19a4e", "#f4ddb1", "#fdf9f0"];
@@ -11,8 +12,15 @@ function motionAllowed() {
   return !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
+/*
+ * Dans l'application mobile, chaque célébration s'accompagne d'une vibration
+ * (`haptic` ne fait rien dans un navigateur). Elle précède le test de
+ * `prefers-reduced-motion`, qui ne concerne que l'animation.
+ */
+
 /** Petite explosion — une étape cochée. */
 export function celebrateStep(origin?: { x: number; y: number }) {
+  void haptic("light");
   if (!motionAllowed()) return;
   confetti({
     particleCount: 40,
@@ -28,6 +36,7 @@ export function celebrateStep(origin?: { x: number; y: number }) {
 
 /** Célébration complète — un objectif terminé. */
 export function celebrateGoal() {
+  void haptic("success");
   if (!motionAllowed()) return;
   const end = Date.now() + 1400;
 
@@ -63,6 +72,7 @@ export function celebrateGoal() {
 
 /** Feu d'artifice doré — l'objectif final, ou un badge légendaire. */
 export function celebrateFinal() {
+  void haptic("heavy").then(() => haptic("success"));
   if (!motionAllowed()) return;
   const duration = 4000;
   const end = Date.now() + duration;
@@ -97,6 +107,7 @@ export function celebrateFinal() {
 
 /** Pluie d'étoiles discrète — déblocage de badge. */
 export function celebrateBadge() {
+  void haptic("success");
   if (!motionAllowed()) return;
   confetti({
     particleCount: 60,

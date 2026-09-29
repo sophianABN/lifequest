@@ -35,7 +35,9 @@ export const authConfig = {
      */
     authorized({ auth, request }) {
       const isLoggedIn = Boolean(auth?.user);
-      const publicPaths = ["/connexion", "/inscription", "/bienvenue"];
+      // `/confidentialite` : lue avant toute inscription, et liée depuis les
+      // fiches App Store et Play Store.
+      const publicPaths = ["/connexion", "/inscription", "/bienvenue", "/confidentialite"];
       const isPublic = publicPaths.some((p) => request.nextUrl.pathname.startsWith(p));
 
       if (

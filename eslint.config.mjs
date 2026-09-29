@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Projets natifs : sources Java/Swift, et copies générées de `mobile/www`
+    // et du pont Capacitor.
+    "mobile/ios/**",
+    "mobile/android/**",
   ]),
 ]);
 

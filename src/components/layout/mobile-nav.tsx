@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { motion } from "motion/react";
 
 import { cn } from "@/lib/utils";
+import { haptic } from "@/lib/native";
 import { MOBILE_NAV } from "./nav-config";
 
 /** Barre d'onglets fixe en bas d'écran — remplace la sidebar sur mobile. */
@@ -13,7 +14,7 @@ export function MobileNav() {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-30 border-t border-border/60 glass pb-[env(safe-area-inset-bottom)] lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-30 border-t border-border/60 glass pb-[var(--safe-bottom)] lg:hidden"
       aria-label="Navigation"
     >
       <ul className="flex items-stretch justify-around">
@@ -24,6 +25,9 @@ export function MobileNav() {
               <Link
                 href={item.href}
                 aria-current={active ? "page" : undefined}
+                // Léger déclic sous le doigt dans l'application, comme une
+                // barre d'onglets native.
+                onClick={() => void haptic("selection")}
                 className={cn(
                   "relative flex min-w-0 flex-col items-center gap-0.5 px-1 py-2.5 text-[0.65rem] font-semibold transition-colors",
                   active ? "text-blush-600 dark:text-blush-300" : "text-muted-foreground",

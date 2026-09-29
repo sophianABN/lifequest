@@ -7,6 +7,7 @@ import { SessionProvider } from "next-auth/react";
 import { Toaster } from "sonner";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { NativeBridge } from "@/components/native/native-bridge";
 
 /**
  * Tous les providers client de l'application, regroupés pour que le layout
@@ -37,8 +38,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
             <Toaster
               position="top-center"
               richColors
+              // Sous la barre d'état dans l'application mobile (`--safe-top`
+              // est nul dans un navigateur).
+              offset={{ top: "calc(var(--safe-top) + 24px)" }}
+              mobileOffset={{ top: "calc(var(--safe-top) + 16px)" }}
               toastOptions={{ className: "rounded-2xl border-border shadow-lifted font-sans" }}
             />
+            <NativeBridge />
           </TooltipProvider>
         </ThemeProvider>
       </QueryClientProvider>

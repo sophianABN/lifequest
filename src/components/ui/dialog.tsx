@@ -38,7 +38,8 @@ export const DialogContent = React.forwardRef<
       className={cn(
         "fixed left-1/2 top-1/2 z-50 grid w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4",
         "rounded-3xl border border-border/70 bg-card p-6 shadow-lifted",
-        "max-h-[calc(100vh-3rem)] overflow-y-auto",
+        // Hauteur utile hors barre d'état et indicateur d'accueil (application mobile).
+        "max-h-[calc(100dvh-3rem-var(--safe-top)-var(--safe-bottom))] overflow-y-auto",
         "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
         className,
       )}
@@ -101,18 +102,27 @@ export const SheetContent = React.forwardRef<
       className={cn(
         "fixed z-50 flex flex-col gap-4 bg-card shadow-lifted transition ease-in-out",
         "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-200 data-[state=open]:duration-300",
+        // Les panneaux latéraux couvrent toute la hauteur : leur contenu
+        // commence sous la barre d'état et s'arrête avant l'indicateur
+        // d'accueil. Un `className` qui pose son propre padding vertical doit
+        // donc y ajouter `var(--safe-top)` / `var(--safe-bottom)`.
         side === "left" &&
-          "inset-y-0 left-0 h-full w-[19rem] max-w-[85vw] rounded-r-3xl border-r data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left",
+          "inset-y-0 left-0 h-full w-[19rem] max-w-[85vw] rounded-r-3xl border-r pt-[var(--safe-top)] pb-[var(--safe-bottom)] data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left",
         side === "right" &&
-          "inset-y-0 right-0 h-full w-[26rem] max-w-[92vw] rounded-l-3xl border-l data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right",
+          "inset-y-0 right-0 h-full w-[26rem] max-w-[92vw] rounded-l-3xl border-l pt-[var(--safe-top)] pb-[var(--safe-bottom)] data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right",
         side === "bottom" &&
-          "inset-x-0 bottom-0 max-h-[88vh] rounded-t-3xl border-t data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
+          "inset-x-0 bottom-0 max-h-[88vh] rounded-t-3xl border-t pb-[var(--safe-bottom)] data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
         className,
       )}
       {...props}
     >
       {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 grid size-8 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+      <DialogPrimitive.Close
+        className={cn(
+          "absolute right-4 top-4 grid size-8 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+          side !== "bottom" && "top-[calc(1rem+var(--safe-top))]",
+        )}
+      >
         <X className="size-4" />
         <span className="sr-only">Fermer</span>
       </DialogPrimitive.Close>

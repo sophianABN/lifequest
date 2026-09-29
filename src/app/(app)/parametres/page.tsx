@@ -5,17 +5,20 @@ import { Settings } from "lucide-react";
 import { getProfile } from "@/server/queries/user";
 import { getPeople } from "@/server/queries/goals";
 import { aiProviderLabel, isAiEnabled } from "@/lib/ai/client";
+import { isDemoSession } from "@/lib/auth";
 import { isStorageEnabled } from "@/lib/storage";
 import { toDateInput } from "@/lib/utils";
 import { PageHeader } from "@/components/shared/page-header";
 import { SettingsForm } from "@/components/settings/settings-form";
+import { DeleteAccountCard } from "@/components/settings/delete-account";
+import { DailyReminderCard } from "@/components/native/daily-reminder";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 export const metadata: Metadata = { title: "Paramètres" };
 
 export default async function SettingsPage() {
-  const [profile, people] = await Promise.all([getProfile(), getPeople()]);
+  const [profile, people, demo] = await Promise.all([getProfile(), getPeople(), isDemoSession()]);
   if (!profile) redirect("/connexion");
 
   return (
@@ -47,6 +50,9 @@ export default async function SettingsPage() {
         people={people}
         storageEnabled={isStorageEnabled()}
       />
+
+      {/* Application mobile uniquement — ne rend rien dans un navigateur. */}
+      <DailyReminderCard />
 
       <Card>
         <CardHeader>
@@ -92,6 +98,8 @@ export default async function SettingsPage() {
           </p>
         </CardContent>
       </Card>
+
+      <DeleteAccountCard demo={demo} />
     </div>
   );
 }

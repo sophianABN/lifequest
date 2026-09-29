@@ -52,7 +52,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       </section>
 
       {/* Formulaire */}
-      <section className="flex items-center justify-center px-5 py-12 sm:px-10">
+      <section className="flex items-center justify-center px-5 pt-[calc(3rem+var(--safe-top))] pb-[calc(3rem+var(--safe-bottom))] sm:px-10">
         <div className="w-full max-w-sm">{children}</div>
       </section>
     </div>

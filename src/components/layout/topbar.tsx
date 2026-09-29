@@ -22,7 +22,9 @@ export function Topbar({
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center gap-2 border-b border-border/60 glass px-3 sm:px-5">
+    // Collée sous la barre d'état dans l'application mobile (`--safe-top`,
+    // nul dans un navigateur).
+    <header className="sticky top-[var(--safe-top)] z-30 flex h-16 items-center gap-2 border-b border-border/60 glass px-3 sm:px-5">
       {/* Navigation mobile en tiroir */}
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
         <SheetTrigger asChild>
@@ -30,7 +32,7 @@ export function Topbar({
             <Menu />
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="p-0">
+        <SheetContent side="left" className="px-0">
           <SheetTitle className="sr-only">Navigation</SheetTitle>
           <Sidebar user={user} onNavigate={() => setMobileOpen(false)} />
         </SheetContent>

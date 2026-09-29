@@ -126,6 +126,13 @@
   --border: #ece8ef;
   --input: #e7e3ec;
   --ring: #f295b6;
+
+  /* Zones sûres — barre d'état, encoche, indicateur d'accueil. Nulles dans un
+     navigateur, renseignées dans l'application mobile (`viewport-fit=cover`).
+     Capacitor injecte `--safe-area-inset-*` sur les WebView Android qui ne
+     remplissent pas encore `env()` ; iOS passe par `env()`. */
+  --safe-top: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
+  --safe-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
 }
 
 .dark {
@@ -256,6 +263,15 @@
   :focus-visible {
     outline: 2px solid var(--ring);
     outline-offset: 2px;
+  }
+
+  /* Application mobile (`.native-app`, posée par NativeBridge) : un appui long
+     sur un bouton, un onglet ou un lien ne sélectionne rien et n'ouvre pas le
+     menu « Copier / Partager » — seulement sur le texte qu'on lit. */
+  .native-app :where(a, button, label, nav, header, [role="button"], [role="tab"], [role="menuitem"]) {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
   }
 }
 

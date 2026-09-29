@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Mêmes valeurs que les jetons background et primary de globals.css. -->
+    <color name="app_background">#FDFBF9</color>
+    <color name="brand_primary">#E4739C</color>
+</resources>

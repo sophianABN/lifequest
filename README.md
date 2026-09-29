@@ -119,6 +119,25 @@ PostgreSQL non exposée. Procédure complète, invariants et retour arrière :
 
 ---
 
+## Application mobile
+
+LifeQuest existe aussi en application iOS et Android (Capacitor), publiable sur
+l'App Store et le Play Store. Elle affiche le site de production : **déployer le
+site met à jour l'application**, sans nouvelle soumission. La coquille native
+ajoute écran de lancement, haptique, gestes de retour, navigateur intégré, page
+hors connexion et rappel quotidien.
+
+```bash
+npm run mobile:ios        # ouvre Xcode
+npm run mobile:android    # ouvre Android Studio
+```
+
+Développement, signature, publication et fiches des stores :
+[`mobile/README.md`](mobile/README.md). Le workflow `mobile.yml` compile les
+deux plateformes quand la coquille change.
+
+---
+
 ## Ce qui est implémenté
 
 | Domaine | Détail |
@@ -136,6 +155,8 @@ PostgreSQL non exposée. Procédure complète, invariants et retour arrière :
 | **Assistant** | Conversation en streaming, historique persistant (reprise, renommage, suppression), génération d'étapes proposées avant insertion, analyse de budget, planning hebdomadaire |
 | **Fichiers** | Téléversement vers un stockage compatible S3 (MinIO, R2…), bucket privé servi par l'application, photo de profil et pièces jointes |
 | **Transverse** | Recherche globale ⌘K, notifications, mode clair/sombre, responsive, accessibilité (vue tableau sous chaque graphique, libellés ARIA, `prefers-reduced-motion`) |
+| **Compte** | Suppression définitive du compte et de tous ses fichiers, confirmée par mot de passe ; politique de confidentialité publique (`/confidentialite`) |
+| **Mobile** | Applications iOS et Android (Capacitor) : haptique, gestes de retour, navigateur intégré, rappel quotidien, page hors connexion |
 
 ---
 

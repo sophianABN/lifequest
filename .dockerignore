@@ -13,3 +13,8 @@ docs
 README.md
 AGENTS.md
 CLAUDE.md
+
+# Projets natifs de l'application mobile : sans usage dans l'image du serveur.
+mobile/ios
+mobile/android
+mobile/store

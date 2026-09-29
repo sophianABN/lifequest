@@ -1,8 +1,10 @@
-import { randomUUID } from "node:crypto";
+import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 
 import {
   DeleteObjectCommand,
+  DeleteObjectsCommand,
   GetObjectCommand,
+  ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
@@ -89,6 +91,40 @@ export function publicPath(key: string) {
   return `/api/fichiers/${key.split("/").map(encodeURIComponent).join("/")}`;
 }
 
+/* ── Liens signés ─────────────────────────────────────────────────────────── */
+
+/** Durée de validité d'un lien signé : le temps d'ouvrir le fichier. */
+const SIGNED_LINK_TTL_S = 10 * 60;
+
+function signature(key: string, expires: number) {
+  const secret = process.env.AUTH_SECRET;
+  if (!secret) throw new Error("AUTH_SECRET est absent : impossible de signer un lien.");
+  return createHmac("sha256", secret).update(`fichier:${key}:${expires}`).digest("base64url");
+}
+
+/**
+ * URL de lecture valable quelques minutes sans session.
+ *
+ * Sert à l'application mobile : elle ouvre les documents dans le navigateur
+ * intégré du système, qui ne partage pas ses cookies. La signature couvre la
+ * clé et l'échéance — impossible de la réutiliser pour un autre fichier ou
+ * au-delà du délai.
+ */
+export function signedPath(key: string) {
+  const expires = Math.floor(Date.now() / 1000) + SIGNED_LINK_TTL_S;
+  return `${publicPath(key)}?expire=${expires}&signature=${signature(key, expires)}`;
+}
+
+/** Vrai si la signature correspond à la clé et n'a pas expiré. */
+export function verifySignedPath(key: string, expires: string | null, provided: string | null) {
+  if (!expires || !provided) return false;
+  const expiresAt = Number(expires);
+  if (!Number.isInteger(expiresAt) || expiresAt < Date.now() / 1000) return false;
+  const expected = Buffer.from(signature(key, expiresAt));
+  const received = Buffer.from(provided);
+  return expected.length === received.length && timingSafeEqual(expected, received);
+}
+
 /** Extrait la clé d'une URL produite par `publicPath`, sinon `null`. */
 export function keyFromPath(url: string) {
   if (!url.startsWith("/api/fichiers/")) return null;
@@ -139,4 +175,33 @@ export async function deleteByUrl(url: string | null | undefined, userId: string
   if (!url || !isStorageEnabled()) return;
   const key = keyFromPath(url);
   if (key && ownsKey(userId, key)) await deleteObject(key);
+}
+
+/**
+ * Supprime tous les fichiers d'un compte — suppression du compte.
+ *
+ * Le préfixe `<userId>/` regroupe avatar, pièces jointes et photos du
+ * journal : une liste paginée, puis des suppressions par lots de mille (la
+ * limite de l'API S3). Contrairement à `deleteObject`, les erreurs remontent :
+ * l'appelant doit savoir si des fichiers personnels sont restés en place.
+ */
+export async function deleteAllForUser(userId: string) {
+  if (!isStorageEnabled()) return;
+  let continuationToken: string | undefined;
+  do {
+    const page = await client().send(
+      new ListObjectsV2Command({
+        Bucket: bucket(),
+        Prefix: `${userId}/`,
+        ContinuationToken: continuationToken,
+      }),
+    );
+    const objects = (page.Contents ?? []).flatMap((o) => (o.Key ? [{ Key: o.Key }] : []));
+    if (objects.length > 0) {
+      await client().send(
+        new DeleteObjectsCommand({ Bucket: bucket(), Delete: { Objects: objects, Quiet: true } }),
+      );
+    }
+    continuationToken = page.IsTruncated ? page.NextContinuationToken : undefined;
+  } while (continuationToken);
 }

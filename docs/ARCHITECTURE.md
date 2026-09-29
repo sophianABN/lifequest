@@ -164,3 +164,26 @@ repeint jamais les autres.
 
 Chaque graphique est accompagné d'une **vue tableau repliable** — un graphique sans
 équivalent textuel est inaccessible au lecteur d'écran et illisible à l'impression.
+
+---
+
+## 7. Application mobile (`mobile/`, `capacitor.config.ts`)
+
+Coquille **Capacitor 8** (iOS et Android) qui charge le site de production dans une
+WebView. Le choix découle du principe *server-first* : Server Components et Server
+Actions ne s'exportent pas en statique, et une réécriture native dupliquerait chaque
+écran. Un déploiement du site met donc l'application à jour sans passer par les stores.
+
+- **Pont unique** : `lib/native.ts` (détection, haptique, navigateur intégré, fichiers)
+  et `components/native/native-bridge.tsx`, monté dans les providers. Hors application,
+  chaque fonction est sans effet — le web ne change pas.
+- **Zones sûres** : `--safe-top` / `--safe-bottom` (`globals.css`) valent 0 dans un
+  navigateur ; topbar, barre d'onglets, tiroirs et modales s'en servent.
+- **Fichiers** : le navigateur intégré n'a pas les cookies de la WebView. Il reçoit un
+  lien signé HMAC de dix minutes (`signedPath`, `/api/lien-fichier`), vérifié par
+  `/api/fichiers`.
+- **Exigences des stores** portées par le site, donc aussi disponibles sur le web :
+  suppression du compte (`server/actions/account.ts`, fichiers S3 compris) et
+  politique de confidentialité publique (`/confidentialite`).
+
+Procédures de build et de publication : `mobile/README.md`.

@@ -1,0 +1,114 @@
+name: Mobile
+
+# Compile les deux applications natives dès que la coquille change.
+# Le contenu, lui, vient du site : un changement dans `src/` n'a pas besoin
+# de ce workflow (voir mobile/README.md, « Quand republier ? »).
+on:
+  pull_request:
+    paths:
+      - "mobile/**"
+      - "capacitor.config.ts"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/mobile.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "mobile/**"
+      - "capacitor.config.ts"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/mobile.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mobile-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android:
+    name: Android
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: gradle
+
+      - run: npm ci
+        env:
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+
+      - name: Synchroniser Capacitor
+        run: npx cap sync android
+
+      # Sans les secrets, l'AAB sort non signé : la construction est vérifiée,
+      # seule la publication exige la clé d'envoi.
+      - name: Clé de signature
+        env:
+          LIFEQUEST_KEYSTORE_BASE64: ${{ secrets.LIFEQUEST_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$LIFEQUEST_KEYSTORE_BASE64" ]; then
+            echo "$LIFEQUEST_KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/lifequest-upload.jks"
+            echo "LIFEQUEST_KEYSTORE_PATH=$RUNNER_TEMP/lifequest-upload.jks" >> "$GITHUB_ENV"
+          fi
+
+      - name: Construire l'APK de test et l'AAB
+        working-directory: mobile/android
+        env:
+          LIFEQUEST_KEYSTORE_PASSWORD: ${{ secrets.LIFEQUEST_KEYSTORE_PASSWORD }}
+          LIFEQUEST_KEY_ALIAS: ${{ secrets.LIFEQUEST_KEY_ALIAS }}
+          LIFEQUEST_KEY_PASSWORD: ${{ secrets.LIFEQUEST_KEY_PASSWORD }}
+        run: ./gradlew --no-daemon assembleDebug bundleRelease
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lifequest-android-${{ github.sha }}
+          path: |
+            mobile/android/app/build/outputs/apk/debug/app-debug.apk
+            mobile/android/app/build/outputs/bundle/release/app-release.aab
+          retention-days: 14
+
+  ios:
+    name: iOS
+    # Même version d'Xcode qu'en local (26). Sur un dépôt privé, une minute
+    # macOS en décompte dix : d'où le filtre `paths` ci-dessus.
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - run: npm ci
+        env:
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+
+      - name: Synchroniser Capacitor
+        run: npx cap sync ios
+
+      # Compilation sans signature : vérifie le projet, les plugins Swift
+      # Package Manager, le storyboard et les assets. L'archive envoyée sur
+      # App Store Connect se fait depuis Xcode (voir mobile/README.md).
+      - name: Compiler
+        run: >-
+          xcodebuild
+          -project mobile/ios/App/App.xcodeproj
+          -scheme App
+          -configuration Release
+          -destination "generic/platform=iOS"
+          CODE_SIGNING_ALLOWED=NO
+          build

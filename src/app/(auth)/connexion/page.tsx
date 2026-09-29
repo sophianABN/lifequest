@@ -21,6 +21,12 @@ export default function LoginPage() {
           Créer ma quête
         </Link>
       </p>
+
+      <p className="mt-8 text-center text-xs text-muted-foreground">
+        <Link href="/confidentialite" className="hover:text-foreground hover:underline">
+          Confidentialité
+        </Link>
+      </p>
     </div>
   );
 }

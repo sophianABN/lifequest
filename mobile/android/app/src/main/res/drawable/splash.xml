@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Écran de démarrage de repli (plugin SplashScreen hors API Android 12) :
+     fond du thème et pastille centrée, comme sur iOS. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/app_background" />
+    <item
+        android:width="288dp"
+        android:height="288dp"
+        android:drawable="@drawable/splash_icon"
+        android:gravity="center" />
+</layer-list>

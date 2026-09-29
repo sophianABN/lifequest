@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>LifeQuest</title>
+  <!--
+    Capacitor exige un `webDir` contenant un index, mais l'application charge
+    `server.url` (voir capacitor.config.ts) : cette page n'est jamais affichée
+    en temps normal. Si elle l'est — configuration sans `server.url` — elle
+    renvoie simplement vers le site.
+  -->
+  <style>
+    html, body { height: 100%; margin: 0; background: #fdfbf9; }
+    @media (prefers-color-scheme: dark) { html, body { background: #17131d; } }
+  </style>
+  <script>
+    location.replace("https://lifequest.absoley.fr/");
+  </script>
+</head>
+<body></body>
+</html>

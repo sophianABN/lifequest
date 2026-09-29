@@ -149,7 +149,7 @@ export function AssistantChat({
   );
 
   return (
-    <div className="grid h-[calc(100dvh-12rem)] gap-5 md:grid-cols-[15rem_1fr]">
+    <div className="grid h-[calc(100dvh-12rem-var(--safe-top)-var(--safe-bottom))] gap-5 md:grid-cols-[15rem_1fr]">
       {/* Historique — colonne fixe à partir de md, tiroir en dessous */}
       <aside className="hidden min-h-0 md:block">{sidebar}</aside>
 
@@ -166,7 +166,10 @@ export function AssistantChat({
               )}
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="w-80 p-4">
+          <SheetContent
+            side="left"
+            className="w-80 px-4 pt-[calc(1rem+var(--safe-top))] pb-[calc(1rem+var(--safe-bottom))]"
+          >
             <SheetTitle className="mb-4">Historique</SheetTitle>
             {sidebar}
           </SheetContent>

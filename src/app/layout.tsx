@@ -68,6 +68,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <body className="antialiased">
         <Providers>{children}</Providers>
+        {/* Fond de la barre d'état dans l'application mobile : le contenu qui
+            défile passe dessous, flouté comme sous la topbar, au lieu de se
+            mêler à l'heure et à la batterie. Hauteur nulle dans un navigateur. */}
+        <div aria-hidden className="glass fixed inset-x-0 top-0 z-40 h-[var(--safe-top)]" />
       </body>
     </html>
   );
