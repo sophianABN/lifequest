@@ -178,18 +178,41 @@ export function CalendarView({
           Aujourd&apos;hui
         </Button>
 
-        <div className="ml-auto flex items-center gap-2">
-          <Tabs value={view} onValueChange={(v) => setView(v as ViewMode)}>
-            <TabsList>
-              <TabsTrigger value="day">Jour</TabsTrigger>
-              <TabsTrigger value="week">Semaine</TabsTrigger>
-              <TabsTrigger value="month">Mois</TabsTrigger>
-              <TabsTrigger value="year">Année</TabsTrigger>
+        {/* Sur téléphone ce groupe prend toute la largeur et passe sous le
+            titre : les quatre onglets plus « Ajouter » ne tiennent pas sur une
+            ligne de 375 px, et sans `w-full` le groupe reste un seul élément
+            flex insécable qui pousse la page. */}
+        <div className="flex w-full items-center gap-2 sm:ml-auto sm:w-auto">
+          <Tabs
+            value={view}
+            onValueChange={(v) => setView(v as ViewMode)}
+            className="min-w-0 flex-1 sm:flex-none"
+          >
+            {/* `flex-1` et un rembourrage réduit sous `sm` : à 320 px, quatre
+                onglets en `px-4` dépassent de deux pixels. */}
+            <TabsList className="flex w-full sm:inline-flex sm:w-auto">
+              {(
+                [
+                  ["day", "Jour"],
+                  ["week", "Semaine"],
+                  ["month", "Mois"],
+                  ["year", "Année"],
+                ] as const
+              ).map(([valeur, libelle]) => (
+                <TabsTrigger
+                  key={valeur}
+                  value={valeur}
+                  className="flex-1 justify-center px-2 sm:flex-none sm:px-4"
+                >
+                  {libelle}
+                </TabsTrigger>
+              ))}
             </TabsList>
           </Tabs>
 
-          <Button size="sm" onClick={() => setCreatingOn(new Date())}>
-            <CalendarPlus /> Ajouter
+          <Button size="sm" className="shrink-0" onClick={() => setCreatingOn(new Date())}>
+            <CalendarPlus />
+            <span className="max-sm:sr-only">Ajouter</span>
           </Button>
         </div>
       </div>

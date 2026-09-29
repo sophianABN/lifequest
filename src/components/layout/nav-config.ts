@@ -15,6 +15,9 @@ import {
 export interface NavItem {
   href: string;
   label: string;
+  /** Libellé court pour la barre d'onglets mobile, où chaque onglet fait un
+   *  cinquième de l'écran — « Tableau de bord » y passe sur deux lignes. */
+  shortLabel?: string;
   icon: LucideIcon;
   description: string;
 }
@@ -29,7 +32,7 @@ export const NAV_SECTIONS: NavSection[] = [
   {
     label: "Ma quête",
     items: [
-      { href: "/", label: "Tableau de bord", icon: LayoutDashboard, description: "Vue d'ensemble et objectif du jour" },
+      { href: "/", label: "Tableau de bord", shortLabel: "Accueil", icon: LayoutDashboard, description: "Vue d'ensemble et objectif du jour" },
       { href: "/objectifs", label: "Objectifs", icon: Target, description: "Les 25 objectifs et leurs étapes" },
       { href: "/kanban", label: "Kanban", icon: Columns3, description: "Organiser par statut" },
       { href: "/timeline", label: "Timeline", icon: Waypoints, description: "La frise de tes années" },

@@ -20,12 +20,12 @@ export function MobileNav() {
         {MOBILE_NAV.map((item) => {
           const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
           return (
-            <li key={item.href} className="flex-1">
+            <li key={item.href} className="min-w-0 flex-1">
               <Link
                 href={item.href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "relative flex flex-col items-center gap-0.5 px-1 py-2.5 text-[0.65rem] font-semibold transition-colors",
+                  "relative flex min-w-0 flex-col items-center gap-0.5 px-1 py-2.5 text-[0.65rem] font-semibold transition-colors",
                   active ? "text-blush-600 dark:text-blush-300" : "text-muted-foreground",
                 )}
               >
@@ -36,8 +36,10 @@ export function MobileNav() {
                     transition={{ type: "spring", stiffness: 400, damping: 32 }}
                   />
                 )}
-                <item.icon className="size-5" />
-                {item.label}
+                <item.icon className="size-5 shrink-0" />
+                {/* Une seule ligne, quoi qu'il arrive : un libellé qui passe à
+                    la ligne déborde de son onglet et chevauche le contenu. */}
+                <span className="max-w-full truncate">{item.shortLabel ?? item.label}</span>
               </Link>
             </li>
           );

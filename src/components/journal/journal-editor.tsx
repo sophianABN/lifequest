@@ -85,7 +85,10 @@ export function JournalEditor({
   return (
     <>
       <Card variant="gradient">
-        <CardHeader className="flex-row items-center justify-between">
+        {/* Le sélecteur de date a une largeur intrinsèque d'environ 160 px :
+            sur un écran de 320 px il ne tient pas à côté du titre. On les
+            empile en dessous de `sm`. */}
+        <CardHeader className="flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
           <CardTitle className="flex items-center gap-2">
             <BookHeart className="size-4 text-lilac-500" /> Aujourd&apos;hui
           </CardTitle>
@@ -93,7 +96,7 @@ export function JournalEditor({
             type="date"
             value={draft.date}
             onChange={(e) => changeDate(e.target.value)}
-            className="h-9 w-auto"
+            className="h-9 w-full sm:w-auto"
             aria-label="Date de l'entrée"
           />
         </CardHeader>

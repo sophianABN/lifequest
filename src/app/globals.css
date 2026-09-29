@@ -195,6 +195,21 @@
     scroll-behavior: smooth;
   }
 
+  /* Un élément de grille vaut `min-width: auto` par défaut : il refuse de
+     passer sous la largeur intrinsèque de son contenu. Un graphique ou un
+     titre long élargit donc sa colonne, qui élargit la page, et le téléphone
+     se retrouve à scroller horizontalement.
+
+     `:where()` annule la spécificité : c'est une valeur par défaut, pas une
+     surcharge — n'importe quel utilitaire `min-w-*` reprend la main.
+
+     Volontairement limité aux grilles. En flex, l'idiome Tailwind est
+     `shrink-0` pour ce qui ne doit pas rétrécir ; appliquer la même règle y
+     écraserait des avatars et des icônes. */
+  :where(.grid) > * {
+    min-width: 0;
+  }
+
   body {
     background-color: var(--background);
     color: var(--foreground);
