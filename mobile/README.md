@@ -199,22 +199,44 @@ pour Android, sur une compilation Debug.
 
 ## Publier sur l'App Store
 
-### Une seule fois
+### Déjà en place
 
-1. **Apple Developer Program** (99 $/an).
-2. Sur developer.apple.com, créer l'identifiant d'app `fr.absoley.lifequest`.
-3. Dans App Store Connect, créer l'app **LifeQuest** (langue principale :
-   français).
-4. Dans Xcode (`npm run mobile:ios`) : cible *App* › *Signing & Capabilities* ›
-   choisir l'équipe. La signature automatique fait le reste.
+- Équipe `M4XTZ72X4X` renseignée dans le projet, signature automatique.
+- Identifiant `fr.absoley.lifequest` enregistré, fiche **LifeQuest** créée
+  dans App Store Connect.
 
 ### Chaque version
 
-1. Cible *App* › *General* : augmenter **Version** (1.0.0 → 1.1.0) et/ou
-   **Build**.
-2. *Product › Destination › Any iOS Device*, puis *Product › Archive*.
-3. *Distribute App › App Store Connect* : la version arrive dans TestFlight,
-   puis se soumet à la validation depuis App Store Connect.
+1. Augmenter le numéro de build — **obligatoire à chaque envoi** — et, si
+   besoin, la version : `CURRENT_PROJECT_VERSION` et `MARKETING_VERSION` dans
+   la cible *App* (onglet *General* : **Build** et **Version**).
+2. Vérifier que l'app pointe sur la production : `npx cap sync ios`.
+3. Archiver sans signature, puis signer pour l'App Store et envoyer :
+
+   ```bash
+   cd mobile/ios/App && xcodebuild -project App.xcodeproj -scheme App -configuration Release -destination "generic/platform=iOS" -archivePath build/LifeQuest.xcarchive CODE_SIGNING_ALLOWED=NO archive
+   ```
+
+   ```bash
+   cd mobile/ios/App && xcodebuild -exportArchive -archivePath build/LifeQuest.xcarchive -exportOptionsPlist ../ExportOptions.plist -exportPath build/export -allowProvisioningUpdates
+   ```
+
+   Cette voie n'a besoin d'aucun appareil enregistré. *Product › Archive*
+   dans Xcode fonctionne aussi, mais signe d'abord en mode développement, ce
+   qui exige au moins un iPhone déclaré sur le compte.
+4. La version apparaît dans **TestFlight** après 5 à 30 minutes de traitement.
+
+### TestFlight
+
+- **Testeurs internes** (jusqu'à 100 membres de l'équipe App Store Connect) :
+  *TestFlight › Tests internes* › créer un groupe, ajouter les personnes. Pas
+  de validation Apple, disponible dès la fin du traitement.
+- **Testeurs externes** (jusqu'à 10 000, par e-mail ou **lien public**) :
+  *TestFlight › Tests externes* › créer un groupe, ajouter la version. La
+  première version passe une validation bêta d'Apple (24 à 48 h) ; renseigner
+  les *informations de test* (description, e-mail de retour, note sur le
+  compte de démonstration).
+- Chaque version reste installable 90 jours.
 
 ## Fiches des stores
 

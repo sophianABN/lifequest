@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Export d'une archive pour l'App Store et TestFlight (voir mobile/README.md).
+  Signature de distribution automatique : aucun appareil enregistré n'est
+  nécessaire, contrairement à une signature de développement.
+  `destination` : `upload` envoie sur App Store Connect ; `export` produirait
+  un .ipa local à la place.
+-->
+<plist version="1.0">
+<dict>
+	<key>method</key>
+	<string>app-store-connect</string>
+	<key>teamID</key>
+	<string>M4XTZ72X4X</string>
+	<key>signingStyle</key>
+	<string>automatic</string>
+	<key>destination</key>
+	<string>upload</string>
+	<key>uploadSymbols</key>
+	<true/>
+	<key>manageAppVersionAndBuildNumber</key>
+	<false/>
+</dict>
+</plist>
